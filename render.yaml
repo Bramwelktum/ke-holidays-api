@@ -17,4 +17,3 @@ databases:
   - name: ke-holidays-db
     plan: free
     databaseName: holidays
-    user: postgres
