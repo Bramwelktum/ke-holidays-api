@@ -11,7 +11,7 @@ services:
           name: ke-holidays-db
           property: connectionString
       - key: PYTHON_VERSION
-        value: 3.12
+        value: 3.12.0
 
 databases:
   - name: ke-holidays-db
