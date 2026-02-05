@@ -45,6 +45,24 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+@app.get("/v1/debug/stats")
+def get_stats(db: Session = Depends(get_db)):
+    count = db.query(func.count(Holiday.id)).scalar()
+    latest = db.query(Holiday).order_by(Holiday.id.desc()).first()
+    return {
+        "total_holidays": count,
+        "latest_entry": latest.name if latest else None,
+        "database_url_configured": True if engine.url.database else False
+    }
+
+@app.get("/v1/debug/force-seed")
+def force_seed(year: int = Query(default=2026), db: Session = Depends(get_db)):
+    try:
+        count = perform_ingestion(db, year, include_news=True)
+        return {"status": "success", "ingested": count}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
 @app.get("/health")
 def health():
     return {"ok": True}
