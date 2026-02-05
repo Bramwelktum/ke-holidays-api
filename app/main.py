@@ -12,21 +12,29 @@ from .ingest_utils import perform_ingestion
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables
-    Base.metadata.create_all(bind=engine)
-    
-    # Auto-seed if empty
-    with SessionLocal() as db:
-        count = db.query(func.count(Holiday.id)).scalar()
-        if count == 0:
-            print("📭 Database is empty. Seeding baseline holidays for current year...")
-            try:
-                # Fast seed (baseline only) for startup
-                perform_ingestion(db, datetime.now().year, include_news=False)
-                print("✅ Auto-seed complete.")
-            except Exception as e:
-                print(f"⚠️ Auto-seed failed: {e}")
+    print("🚀 App starting up...")
+    try:
+        # Startup: create tables
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables verified.")
+        
+        # Auto-seed if empty
+        with SessionLocal() as db:
+            count = db.query(func.count(Holiday.id)).scalar()
+            print(f"📊 Current holiday count: {count}")
+            if count == 0:
+                print("📭 Database is empty. Seeding baseline holidays for current year...")
+                try:
+                    # Fast seed (baseline only) for startup
+                    perform_ingestion(db, datetime.now().year, include_news=False)
+                    print("✅ Auto-seed complete.")
+                except Exception as e:
+                    print(f"⚠️ Auto-seed failed: {e}")
+    except Exception as e:
+        print(f"❌ Startup Error: {e}")
+        
     yield
+    print("👋 App shutting down...")
 
 
 app = FastAPI(
@@ -49,10 +57,17 @@ app.add_middleware(
 def get_stats(db: Session = Depends(get_db)):
     count = db.query(func.count(Holiday.id)).scalar()
     latest = db.query(Holiday).order_by(Holiday.id.desc()).first()
+    
+    db_url = str(engine.url)
+    # Obfuscate the password and host
+    parts = db_url.split("@")
+    obfuscated_url = parts[-1] if len(parts) > 1 else db_url
+    
     return {
         "total_holidays": count,
         "latest_entry": latest.name if latest else None,
-        "database_url_configured": True if engine.url.database else False
+        "database_type": engine.name,
+        "database_host_info": obfuscated_url,
     }
 
 @app.get("/v1/debug/force-seed")
