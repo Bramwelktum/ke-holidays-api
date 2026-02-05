@@ -30,7 +30,7 @@ def fetch_baseline_from_nager(year: int) -> list[dict]:
         print(f"Warning: Could not fetch baseline: {e}")
         return []
 
-def scrape_news_source(url: str, name: str, selectors: dict) -> list[dict]:
+def scrape_news_source(url: str, name: str, selectors: dict, target_year: int) -> list[dict]:
     """Generic news scraper."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
     try:
@@ -56,14 +56,18 @@ def scrape_news_source(url: str, name: str, selectors: dict) -> list[dict]:
                     clean_title = re.sub(r'^(Live|News|Video|Photos):', '', title, flags=re.I).strip()
                     date_match = re.search(r'(\d+(st|nd|rd|th)?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*|\d{4})', clean_title, re.I)
                     if date_match:
-                        parsed_date = parser.parse(clean_title, fuzzy=True, default=datetime(datetime.now().year, 1, 1))
-                        found.append({
-                            "date": parsed_date.date(),
-                            "name": title,
-                            "type": "special",
-                            "source": name.lower(),
-                            "source_url": link,
-                        })
+                        # Use target_year as default so "Oct 10" becomes "2025-10-10" if ingesting 2025
+                        parsed_date = parser.parse(clean_title, fuzzy=True, default=datetime(target_year, 1, 1))
+                        
+                        # Only accept if the parsed date actually falls in our target year
+                        if parsed_date.year == target_year:
+                            found.append({
+                                "date": parsed_date.date(),
+                                "name": title,
+                                "type": "special",
+                                "source": name.lower(),
+                                "source_url": link,
+                            })
                 except: continue
         return found
     except Exception: return []
@@ -79,7 +83,7 @@ def perform_ingestion(db: Session, year: int, include_news: bool = True):
             {"name": "KTN News", "url": "https://www.standardmedia.co.ke/search?q=public+holiday+declared", "selectors": {"container": ".col-md-8", "title": "h4 a"}},
         ]
         for src in sources:
-            specials.extend(scrape_news_source(src['url'], src['name'], src['selectors']))
+            specials.extend(scrape_news_source(src['url'], src['name'], src['selectors'], year))
 
     all_items = baseline + specials
     holiday_dates = set(i["date"] for i in all_items)
