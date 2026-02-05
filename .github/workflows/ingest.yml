@@ -25,8 +25,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          # Ingest current year and next year
+          echo "🚀 Starting ingestion..."
           CURRENT_YEAR=$(date +%Y)
           NEXT_YEAR=$((CURRENT_YEAR + 1))
           python -m scripts.ingest $CURRENT_YEAR
           python -m scripts.ingest $NEXT_YEAR
+          echo "🏁 Ingestion complete."

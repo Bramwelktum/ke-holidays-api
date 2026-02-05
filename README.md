@@ -28,6 +28,7 @@ Once deployed, use these endpoints:
 ## 📚 API Features
 
 - **Sunday Rule**: Holidays falling on Sunday automatically move to the next non-holiday day
+- **Surprise Holiday Scraping**: Automatically scrapes NTV Kenya and KTN News for recently declared public holidays
 - **Multiple Query Options**: By year or date range
 - **Public Access**: CORS enabled for anyone to call from web browsers
 - **Auto-generated Docs**: Interactive Swagger UI at `/docs`
@@ -91,10 +92,15 @@ Once deployed, use these endpoints:
    uvicorn app.main:app --reload
    ```
 
-7. **Test locally**
-   - API Docs: http://127.0.0.1:8000/docs
-   - Health: http://127.0.0.1:8000/health
-   - Holidays: http://127.0.0.1:8000/v1/holidays?year=2026
+### 7. Test locally
+- API Docs: http://127.0.0.1:8000/docs
+- Health: http://127.0.0.1:8000/health
+- Holidays: http://127.0.0.1:8000/v1/holidays?year=2026
+
+**New: Run the test script for detailed feedback, including the news scraping feature:**
+```bash
+python scripts/test_api.py http://127.0.0.1:8000
+```
 
 ## 📖 Usage Examples
 
@@ -113,6 +119,12 @@ curl "https://your-app.onrender.com/v1/holidays?from=2026-01-01&to=2026-03-31"
 curl "https://your-app.onrender.com/v1/is-holiday?date=2026-06-01"
 ```
 
+## 🧪 Testing Deployed API
+For clear feedback on your live API, run:
+```bash
+python scripts/test_api.py https://YOUR-APP-NAME.onrender.com
+```
+
 ### JavaScript/Fetch Example
 ```javascript
 // Get holidays for current year
@@ -127,6 +139,7 @@ const checkResponse = await fetch(`https://your-app.onrender.com/v1/is-holiday?d
 const result = await checkResponse.json();
 console.log(result.isHoliday); // true or false
 ```
+
 
 ## 📁 Project Structure
 
