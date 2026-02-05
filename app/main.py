@@ -1,20 +1,32 @@
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime
 from fastapi import FastAPI, Depends, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
-from .db import Base, engine, get_db
+from sqlalchemy import select, and_, func
+from .db import Base, engine, get_db, SessionLocal
 from .models import Holiday
 from .schemas import HolidaysResponse, HolidayOut
+from .ingest_utils import perform_ingestion
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: create tables
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-seed if empty
+    with SessionLocal() as db:
+        count = db.query(func.count(Holiday.id)).scalar()
+        if count == 0:
+            print("📭 Database is empty. Seeding baseline holidays for current year...")
+            try:
+                # Fast seed (baseline only) for startup
+                perform_ingestion(db, datetime.now().year, include_news=False)
+                print("✅ Auto-seed complete.")
+            except Exception as e:
+                print(f"⚠️ Auto-seed failed: {e}")
     yield
-    # Shutdown: cleanup if needed
 
 
 app = FastAPI(
@@ -49,12 +61,21 @@ def get_holidays(
 
     stmt = select(Holiday).where(Holiday.country_code == "KE", Holiday.is_active == True)
 
+    # Filtering logic
+    start_filter = from_
+    end_filter = to
+
     if year is not None:
-        start = date(year, 1, 1)
-        end = date(year, 12, 31)
-        stmt = stmt.where(and_(Holiday.observed_date >= start, Holiday.observed_date <= end))
-    else:
-        stmt = stmt.where(and_(Holiday.observed_date >= from_, Holiday.observed_date <= to))
+        year_start = date(year, 1, 1)
+        year_end = date(year, 12, 31)
+        # Intersection of year and from/to
+        start_filter = max(start_filter, year_start) if start_filter else year_start
+        end_filter = min(end_filter, year_end) if end_filter else year_end
+
+    if start_filter:
+        stmt = stmt.where(Holiday.observed_date >= start_filter)
+    if end_filter:
+        stmt = stmt.where(Holiday.observed_date <= end_filter)
 
     rows = db.execute(stmt.order_by(Holiday.observed_date.asc(), Holiday.name.asc())).scalars().all()
 
