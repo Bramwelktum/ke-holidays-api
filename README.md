@@ -2,7 +2,7 @@
 
 A free, public FastAPI service providing Kenya public holidays with observed-date rule support.
 
-## 🌐 Live API Endpoints
+## Live API Endpoints
 
 Once deployed, use these endpoints:
 
@@ -12,7 +12,7 @@ Once deployed, use these endpoints:
 - **Date Range**: `GET /v1/holidays?from=2026-01-01&to=2026-12-31`
 - **Is Holiday**: `GET /v1/is-holiday?date=2026-06-01`
 
-## 🚀 Quick Deployment (Free Hosting)
+## Quick Deployment (Free Hosting)
 
 **Deploy for free in 5 minutes!** See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
@@ -25,7 +25,7 @@ Once deployed, use these endpoints:
 
 **That's it!** Your API will be live at `https://your-app.onrender.com`
 
-## 📚 API Features
+## API Features
 
 - **Sunday Rule**: Holidays falling on Sunday automatically move to the next non-holiday day
 - **Surprise Holiday Scraping**: Automatically scrapes NTV Kenya and KTN News for recently declared public holidays
@@ -33,7 +33,7 @@ Once deployed, use these endpoints:
 - **Public Access**: CORS enabled for anyone to call from web browsers
 - **Auto-generated Docs**: Interactive Swagger UI at `/docs`
 
-## 🏃 Local Development
+## Local Development
 
 ### Prerequisites
 - Python 3.12+
@@ -102,7 +102,7 @@ Once deployed, use these endpoints:
 python scripts/test_api.py http://127.0.0.1:8000
 ```
 
-## 📖 Usage Examples
+## Usage Examples
 
 ### Get all holidays for 2026
 ```bash
@@ -119,7 +119,7 @@ curl "https://your-app.onrender.com/v1/holidays?from=2026-01-01&to=2026-03-31"
 curl "https://your-app.onrender.com/v1/is-holiday?date=2026-06-01"
 ```
 
-## 🧪 Testing Deployed API
+## Testing Deployed API
 For clear feedback on your live API, run:
 ```bash
 python scripts/test_api.py https://YOUR-APP-NAME.onrender.com
@@ -141,7 +141,7 @@ console.log(result.isHoliday); // true or false
 ```
 
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ke-holidays-api/
@@ -163,24 +163,24 @@ ke-holidays-api/
 └── docker-compose.yml   # Local PostgreSQL
 ```
 
-## 🔧 Configuration
+## Configuration
 
 The API uses environment variables:
 
 - `DATABASE_URL`: PostgreSQL connection string (auto-set by hosting platforms)
 - `PORT`: Server port (auto-set by hosting platforms)
 
-## 📝 License
+## License
 
 This project is open source and available for free use.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Feel free to:
 - Report bugs
 - Suggest features
 - Submit pull requests
 
-## 📄 More Information
+## More Information
 
 For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
